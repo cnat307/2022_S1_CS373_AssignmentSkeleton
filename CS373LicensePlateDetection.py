@@ -55,6 +55,29 @@ def createInitializedGreyscalePixelArray(image_width, image_height, initValue = 
     return new_array
 
 
+def computeRGBToGreyscale(pixel_array_r, pixel_array_g, pixel_array_b, image_width, image_height):
+    greyscale_pixel_array = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array_r):
+        for j, y in enumerate(x):
+            value = y * 0.299
+            greyscale_pixel_array[i][j] += value
+
+    for i, x in enumerate(pixel_array_g):
+        for j, y in enumerate(x):
+            value = y * 0.587
+            greyscale_pixel_array[i][j] += value
+
+    for i, x in enumerate(pixel_array_b):
+        for j, y in enumerate(x):
+            value = y * 0.114
+            greyscale_pixel_array[i][j] += value
+
+    for i, x in enumerate(greyscale_pixel_array):
+        for j, y in enumerate(x):
+            greyscale_pixel_array[i][j] = round(greyscale_pixel_array[i][j])
+
+    return greyscale_pixel_array
 
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
@@ -98,7 +121,8 @@ def main():
 
     # STUDENT IMPLEMENTATION here
 
-    px_array = px_array_r
+    px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
+
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
     center_x = image_width / 2.0
