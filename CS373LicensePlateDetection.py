@@ -114,6 +114,34 @@ def scaleTo0And255AndQuantize(pixel_array, image_width, image_height):
 
     return output
 
+
+def computeStandardDeviationImage5x5(pixel_array, image_width, image_height):
+    output = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+
+            if not (i <= 1 or i >= image_height - 2 or j <= 1 or j >= image_height - 2):
+
+                slice = pixel_array[i - 2][j - 2:j + 3], pixel_array[i - 1][j - 2:j + 3], pixel_array[i][j - 2:j + 3], pixel_array[i + 1][j - 2:j + 3], pixel_array[i + 2][j - 2:j + 3]
+                sobel = [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]
+
+                for k, z in enumerate(slice):
+                    for l, a in enumerate(z):
+                        slice[k][l] = slice[k][l] * sobel[k][l]
+
+                mean = sum(map(sum, slice)) / 25
+                sigma = 0.0
+                for b, row in enumerate(slice):
+                    for c, col in enumerate(row):
+                        sigma += (row[c] - mean) * (row[c] - mean)
+
+                std = math.sqrt(sigma / 25)
+
+                output[i][j] = std
+
+    return output
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -156,9 +184,18 @@ def main():
 
     # STUDENT IMPLEMENTATION here
 
+    # Question 1:
+    # Convert RGB to greyscale image
     px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
-
+    # Stretch the values to lie between 0 and 255
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
+
+    #Question 2:
+    #Computing the standard deviation in the 5x5 pixel neighbourhood
+    px_array = computeStandardDeviationImage5x5(px_array, image_width, image_height)
+    # Stretch the result to lie between 0 and 255
+    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
+
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
     center_x = image_width / 2.0
