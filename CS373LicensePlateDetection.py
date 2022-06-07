@@ -142,6 +142,17 @@ def computeStandardDeviationImage5x5(pixel_array, image_width, image_height):
 
     return output
 
+
+def computeThresholdGE(pixel_array, threshold_value, image_width, image_height):
+    greyscale = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+            if y >= threshold_value:
+                greyscale[i][j] = 1
+
+    return greyscale
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -184,17 +195,21 @@ def main():
 
     # STUDENT IMPLEMENTATION here
 
-    # Question 1:
+    # Step 1:
     # Convert RGB to greyscale image
     px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
     # Stretch the values to lie between 0 and 255
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
-    #Question 2:
-    #Computing the standard deviation in the 5x5 pixel neighbourhood
+    # Step 2:
+    # Computing the standard deviation in the 5x5 pixel neighbourhood
     px_array = computeStandardDeviationImage5x5(px_array, image_width, image_height)
     # Stretch the result to lie between 0 and 255
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
+
+    # Step 3:
+    threshold_value = 150;
+    px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
 
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
