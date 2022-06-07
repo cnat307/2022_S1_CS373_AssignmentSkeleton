@@ -79,6 +79,41 @@ def computeRGBToGreyscale(pixel_array_r, pixel_array_g, pixel_array_b, image_wid
 
     return greyscale_pixel_array
 
+
+def computeMinAndMaxValues(pixel_array, image_width, image_height):
+    minValue = 255
+    maxValue = 0
+
+    for i, x in enumerate(pixel_array):
+        if min(x) < minValue:
+            minValue = min(x)
+        if max(x) > maxValue:
+            maxValue = max(x)
+
+    return (minValue, maxValue)
+
+
+def scaleTo0And255AndQuantize(pixel_array, image_width, image_height):
+    minAndMax = computeMinAndMaxValues(pixel_array, image_width, image_height)
+
+    output = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+            if (minAndMax[1] - minAndMax[0]) == 0:
+                scale = 0
+            else:
+                scale = round((y - minAndMax[0]) * (255 / (minAndMax[1] - minAndMax[0])));
+
+            if scale < 0:
+                output[i][j] = 0
+            elif scale > 255:
+                output[i][j] = 255
+            else:
+                output[i][j] = scale
+
+    return output
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -89,7 +124,7 @@ def main():
     SHOW_DEBUG_FIGURES = True
 
     # this is the default input image filename
-    input_filename = "numberplate1.png"
+    input_filename = "numberplate5.png"
 
     if command_line_arguments != []:
         input_filename = command_line_arguments[0]
@@ -123,6 +158,7 @@ def main():
 
     px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
 
+    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
     center_x = image_width / 2.0
