@@ -270,6 +270,38 @@ def computeConnectedComponentLabeling(pixel_array, image_width, image_height):
 
     return output, labels
 
+def createBoundingBox(component_array, component_values, image_width, image_height):
+
+    total_pixels = 0
+    component_index = 0
+    for x in component_values.keys():
+        if component_values[x] > total_pixels:
+            component_index = x
+            total_pixels = component_values[x]
+
+    min_x = image_height
+    max_x = 0
+    min_y = image_width
+    max_y = 0
+    for i, x in enumerate(component_array):
+        for j, y in enumerate(x):
+            if y == component_index:
+
+                if i < min_y:
+                    min_y = i
+
+                if i > max_y:
+                    max_y = i
+
+                if j < min_x:
+                    min_x = j
+
+                if j > max_x:
+                    max_x = j
+
+    return [min_x, max_x, min_y, max_y]
+
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -340,38 +372,13 @@ def main():
     component_array = connectedComponents[0]
     component_values = connectedComponents[1]
 
-    total_pixels = 0
-    component_index = 0
-    for x in component_values.keys():
-        if component_values[x] > total_pixels:
-            component_index = x
-            total_pixels = component_values[x]
-
-    min_x = image_height
-    max_x = 0
-    min_y = image_width
-    max_y = 0
-    for i, x in enumerate(component_array):
-        for j, y in enumerate(x):
-            if y==component_index:
-
-                if i < min_y:
-                    min_y = i
-
-                if i > max_y:
-                    max_y = i
-
-                if j < min_x:
-                    min_x = j
-
-                if j > max_x:
-                    max_x = j
+    boxPosition = createBoundingBox(component_array, component_values, image_width, image_height)
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
-    bbox_min_x = min_x
-    bbox_max_x = max_x
-    bbox_min_y = min_y
-    bbox_max_y = max_y
+    bbox_min_x = boxPosition[0]
+    bbox_max_x = boxPosition[1]
+    bbox_min_y = boxPosition[2]
+    bbox_max_y = boxPosition[3]
 
     # Draw a bounding box as a rectangle into the input image
     axs1[1, 1].set_title('Final image of detection')
