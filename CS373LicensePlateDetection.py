@@ -201,6 +201,75 @@ def computeErosion8Nbh3x3FlatSE(pixel_array, image_width, image_height):
 
     return output
 
+class Queue:
+    def __init__(self):
+        self.items = []
+
+    def isEmpty(self):
+        return self.items == []
+
+    def enqueue(self, item):
+        self.items.insert(0,item)
+
+    def dequeue(self):
+        return self.items.pop()
+
+    def size(self):
+        return len(self.items)
+
+def computeConnectedComponentLabeling(pixel_array, image_width, image_height):
+    currentLabel = 1
+    labels = {}
+    visited = createInitializedGreyscalePixelArray(image_width, image_height)
+    output = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+
+            if not (pixel_array[i][j] == 0) and visited[i][j] == 0:
+                visited[i][j] = 1
+                labels[currentLabel] = 0
+
+                q = Queue()
+                Queue.enqueue(q, [i, j])
+
+                while not (Queue.isEmpty(q)):
+                    pixel = Queue.dequeue(q)
+                    r = pixel[0]
+                    c = pixel[1]
+
+                    output[r][c] = currentLabel
+                    visited[r][c] = 1
+
+                    if ((r - 1 >= 0) and visited[r - 1][c] == 0 and not (pixel_array[r - 1][c] == 0)):
+                        Queue.enqueue(q, [r - 1, c])
+                        output[r - 1][c] = currentLabel
+                        visited[r - 1][c] = 1
+
+                    if ((r + 1 <= image_height - 1) and visited[r + 1][c] == 0 and not (pixel_array[r + 1][c] == 0)):
+                        Queue.enqueue(q, [r + 1, c])
+                        output[r + 1][c] = currentLabel
+                        visited[r + 1][c] = 1
+
+                    if ((c - 1 >= 0) and visited[r][c - 1] == 0 and not (pixel_array[r][c - 1] == 0)):
+                        Queue.enqueue(q, [r, c - 1])
+                        output[r][c - 1] = currentLabel
+                        visited[r][c - 1] = 1
+
+                    if ((c + 1 <= image_width - 1) and visited[r][c + 1] == 0 and not (pixel_array[r][c + 1] == 0)):
+                        Queue.enqueue(q, [r, c + 1])
+                        output[r][c + 1] = currentLabel
+                        visited[r][c + 1] = 1
+
+                currentLabel += 1
+
+    for i, x in enumerate(output):
+        for j, y in enumerate(x):
+            if not (y == 0):
+                labels[y] = labels.get(y) + 1
+
+    return output, labels
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -266,17 +335,43 @@ def main():
     for test in range(4):
         px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
 
+    # Step 5:
+    connectedComponents = computeConnectedComponentLabeling(px_array, image_width, image_height)
+    component_array = connectedComponents[0]
+    component_values = connectedComponents[1]
+
+    total_pixels = 0
+    component_index = 0
+    for x in component_values.keys():
+        if component_values[x] > total_pixels:
+            component_index = x
+            total_pixels = component_values[x]
+
+    min_x = image_height
+    max_x = 0
+    min_y = image_width
+    max_y = 0
+    for i, x in enumerate(component_array):
+        for j, y in enumerate(x):
+            if y==component_index:
+
+                if i < min_y:
+                    min_y = i
+
+                if i > max_y:
+                    max_y = i
+
+                if j < min_x:
+                    min_x = j
+
+                if j > max_x:
+                    max_x = j
+
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
-    center_x = image_width / 2.0
-    center_y = image_height / 2.0
-    bbox_min_x = center_x - image_width / 4.0
-    bbox_max_x = center_x + image_width / 4.0
-    bbox_min_y = center_y - image_height / 4.0
-    bbox_max_y = center_y + image_height / 4.0
-
-
-
-
+    bbox_min_x = min_x
+    bbox_max_x = max_x
+    bbox_min_y = min_y
+    bbox_max_y = max_y
 
     # Draw a bounding box as a rectangle into the input image
     axs1[1, 1].set_title('Final image of detection')
