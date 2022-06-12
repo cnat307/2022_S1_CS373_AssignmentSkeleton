@@ -357,14 +357,14 @@ def main():
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
     # Step 3: Perform thresholding operation
-    threshold_value = 150
+    threshold_value = 140
     px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
 
     # Step 4: Perform morphological closing with multiple dilation and erosion steps
-    for test in range(4):
+    for test in range(3):
         px_array = computeDilation8Nbh3x3FlatSE(px_array, image_width, image_height)
 
-    for test in range(4):
+    for test in range(3):
         px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
 
     # Step 5: Finding bounding box
