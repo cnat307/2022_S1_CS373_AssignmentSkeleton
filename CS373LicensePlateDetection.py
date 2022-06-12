@@ -270,14 +270,14 @@ def computeConnectedComponentLabeling(pixel_array, image_width, image_height):
 
     return output, labels
 
-def createBoundingBox(component_array, component_values, image_width, image_height):
+def createBoundingBox(component_array, component_labels, image_width, image_height):
 
     total_pixels = 0
     component_index = 0
-    for x in component_values.keys():
-        if component_values[x] > total_pixels:
+    for x in component_labels.keys():
+        if component_labels[x] > total_pixels:
             component_index = x
-            total_pixels = component_values[x]
+            total_pixels = component_labels[x]
 
     min_x = image_height
     max_x = 0
@@ -367,14 +367,16 @@ def main():
     for test in range(4):
         px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
 
-    # Step 5:
+    # Step 5: Finding bounding box
+
+    # Label components of pixel array
     connectedComponents = computeConnectedComponentLabeling(px_array, image_width, image_height)
     component_array = connectedComponents[0]
-    component_values = connectedComponents[1]
+    component_labels = connectedComponents[1]
 
-    boxPosition = createBoundingBox(component_array, component_values, image_width, image_height)
+    boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height)
 
-    # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
+    # get x,y min - max values of bounding box
     bbox_min_x = boxPosition[0]
     bbox_max_x = boxPosition[1]
     bbox_min_y = boxPosition[2]
