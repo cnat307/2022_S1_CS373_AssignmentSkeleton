@@ -153,6 +153,54 @@ def computeThresholdGE(pixel_array, threshold_value, image_width, image_height):
 
     return greyscale
 
+
+def computeDilation8Nbh3x3FlatSE(pixel_array, image_width, image_height):
+    output = createInitializedGreyscalePixelArray(image_width, image_height);
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+            if not (i < 1 or i > image_height - 2 or j < 1 or j > image_height - 2):
+
+                slice = pixel_array[i - 1][j - 1:j + 2], pixel_array[i][j - 1:j + 2], pixel_array[i + 1][j - 1:j + 2];
+
+                hit = 0;
+                for a, row in enumerate(slice):
+                    for b, col in enumerate(row):
+                        if not (col == 0):
+                            hit = 1;
+
+                if hit == 1:
+                    output[i][j] = 1
+
+    return output;
+
+
+def computeErosion8Nbh3x3FlatSE(pixel_array, image_width, image_height):
+    for i, row in enumerate(pixel_array):
+        pixel_array[i].append(0)
+        pixel_array[i].insert(0, 0)
+
+    pixel_array.append([0] * (image_width + 2))
+    pixel_array.insert(0, [0] * (image_width + 2))
+
+    output = createInitializedGreyscalePixelArray(image_width, image_height)
+
+    for i, x in enumerate(pixel_array):
+        for j, y in enumerate(x):
+            if not (y == 0):
+                slice = pixel_array[i - 1][j - 1:j + 2], pixel_array[i][j - 1:j + 2], pixel_array[i + 1][j - 1:j + 2]
+
+                fit = 1
+                for a, row in enumerate(slice):
+                    for b, col in enumerate(row):
+                        if col == 0:
+                            fit = 0
+
+                if fit == 1:
+                    output[i - 1][j - 1] = 1
+
+    return output
+
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
 # we won't detect arbitrary or difficult to detect license plates!
@@ -207,10 +255,16 @@ def main():
     # Stretch the result to lie between 0 and 255
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
-    # Step 3:
-    threshold_value = 150;
+    # Step 3: Perform thresholding operation
+    threshold_value = 150
     px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
 
+    # Step 4: Perform morphological closing with multiple dilation and erosion steps
+    for test in range(4):
+        px_array = computeDilation8Nbh3x3FlatSE(px_array, image_width, image_height)
+
+    for test in range(4):
+        px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
 
     # compute a dummy bounding box centered in the middle of the input image, and with as size of half of width and height
     center_x = image_width / 2.0
