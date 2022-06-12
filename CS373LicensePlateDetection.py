@@ -155,24 +155,24 @@ def computeThresholdGE(pixel_array, threshold_value, image_width, image_height):
 
 
 def computeDilation8Nbh3x3FlatSE(pixel_array, image_width, image_height):
-    output = createInitializedGreyscalePixelArray(image_width, image_height);
+    output = createInitializedGreyscalePixelArray(image_width, image_height)
 
     for i, x in enumerate(pixel_array):
         for j, y in enumerate(x):
-            if not (i < 1 or i > image_height - 2 or j < 1 or j > image_height - 2):
+            if not (i < 1 or i > image_height - 2 or j < 1 or j > image_width - 2):
 
-                slice = pixel_array[i - 1][j - 1:j + 2], pixel_array[i][j - 1:j + 2], pixel_array[i + 1][j - 1:j + 2];
+                slice = pixel_array[i - 1][j - 1:j + 2], pixel_array[i][j - 1:j + 2], pixel_array[i + 1][j - 1:j + 2]
 
-                hit = 0;
+                hit = 0
                 for a, row in enumerate(slice):
                     for b, col in enumerate(row):
                         if not (col == 0):
-                            hit = 1;
+                            hit = 1
 
                 if hit == 1:
                     output[i][j] = 1
 
-    return output;
+    return output
 
 
 def computeErosion8Nbh3x3FlatSE(pixel_array, image_width, image_height):
