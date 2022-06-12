@@ -121,7 +121,7 @@ def computeStandardDeviationImage5x5(pixel_array, image_width, image_height):
     for i, x in enumerate(pixel_array):
         for j, y in enumerate(x):
 
-            if not (i <= 1 or i >= image_height - 2 or j <= 1 or j >= image_height - 2):
+            if not (i <= 1 or i >= image_height - 2 or j <= 1 or j >= image_width - 2):
 
                 slice = pixel_array[i - 2][j - 2:j + 3], pixel_array[i - 1][j - 2:j + 3], pixel_array[i][j - 2:j + 3], pixel_array[i + 1][j - 2:j + 3], pixel_array[i + 2][j - 2:j + 3]
                 sobel = [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]
@@ -312,7 +312,7 @@ def main():
     SHOW_DEBUG_FIGURES = True
 
     # this is the default input image filename
-    input_filename = "numberplate5.png"
+    input_filename = "numberplate2.png"
 
     if command_line_arguments != []:
         input_filename = command_line_arguments[0]
@@ -381,6 +381,8 @@ def main():
     bbox_max_x = boxPosition[1]
     bbox_min_y = boxPosition[2]
     bbox_max_y = boxPosition[3]
+
+    px_array = px_array_r
 
     # Draw a bounding box as a rectangle into the input image
     axs1[1, 1].set_title('Final image of detection')
