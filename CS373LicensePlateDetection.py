@@ -275,6 +275,7 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
     total_pixels = 0
     component_label = 0
     for x in component_labels.keys():
+        # if current label's component isn't in given aspect ratio range, then skip
         if x not in skipped_labels:
             if component_labels[x] > total_pixels:
                 component_label = x
@@ -284,6 +285,7 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
     max_x = 0
     min_y = image_width
     max_y = 0
+    # find x,y min and max values of bounding box
     for i, x in enumerate(component_array):
         for j, y in enumerate(x):
             if y == component_label:
@@ -301,6 +303,8 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
                     max_x = j
 
     aspect_ratio = (max_x-min_x)/(max_y-min_y)
+    # if largest component doesn't have an aspect ratio within range, add label to skipped_labels array and find the
+    # next largest component
     if aspect_ratio > 5 or aspect_ratio < 1.5:
         skipped_labels = skipped_labels + [component_label]
         return createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
@@ -318,7 +322,7 @@ def main():
     SHOW_DEBUG_FIGURES = True
 
     # this is the default input image filename
-    input_filename = "numberplate6.png"
+    input_filename = "numberplate1.png"
 
     if command_line_arguments != []:
         input_filename = command_line_arguments[0]
@@ -375,7 +379,7 @@ def main():
 
     # Step 5: Finding bounding box
 
-    # Label components of pixel array
+    # Label components of pixel array using connected component analysis
     connectedComponents = computeConnectedComponentLabeling(px_array, image_width, image_height)
     component_array = connectedComponents[0]
     component_labels = connectedComponents[1]
@@ -383,12 +387,13 @@ def main():
     skipped_labels = [0]
     boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
 
-    # get x,y min - max values of bounding box
+    # get x,y min and max values of bounding box
     bbox_min_x = boxPosition[0]
     bbox_max_x = boxPosition[1]
     bbox_min_y = boxPosition[2]
     bbox_max_y = boxPosition[3]
 
+    # set final image array to original red pixel array
     px_array = px_array_r
 
     # Draw a bounding box as a rectangle into the input image
