@@ -311,6 +311,42 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
 
     return [min_x, max_x, min_y, max_y]
 
+def detectPlate(px_array_r, px_array_g, px_array_b, image_width, image_height):
+
+    # Step 1:
+    # Convert RGB to greyscale image
+    px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
+    # Stretch the values to lie between 0 and 255
+    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
+
+    # Step 2:
+    # Computing the standard deviation in the 5x5 pixel neighbourhood
+    px_array = computeStandardDeviationImage5x5(px_array, image_width, image_height)
+    # Stretch the result to lie between 0 and 255
+    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
+
+    # Step 3: Perform thresholding operation
+    threshold_value = 150
+    px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
+
+    # Step 4: Perform morphological closing with multiple dilation and erosion steps
+    for test in range(4):
+        px_array = computeDilation8Nbh3x3FlatSE(px_array, image_width, image_height)
+
+    for test in range(4):
+        px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
+
+    # Step 5: Finding bounding box
+
+    # Label components of pixel array using connected component analysis
+    connectedComponents = computeConnectedComponentLabeling(px_array, image_width, image_height)
+    component_array = connectedComponents[0]
+    component_labels = connectedComponents[1]
+
+    skipped_labels = [0]
+    boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
+
+    return boxPosition
 
 # This is our code skeleton that performs the license plate detection.
 # Feel free to try it on your own images of cars, but keep in mind that with our algorithm developed in this lecture,
@@ -353,39 +389,7 @@ def main():
 
 
     # STUDENT IMPLEMENTATION here
-
-    # Step 1:
-    # Convert RGB to greyscale image
-    px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
-    # Stretch the values to lie between 0 and 255
-    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
-
-    # Step 2:
-    # Computing the standard deviation in the 5x5 pixel neighbourhood
-    px_array = computeStandardDeviationImage5x5(px_array, image_width, image_height)
-    # Stretch the result to lie between 0 and 255
-    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
-
-    # Step 3: Perform thresholding operation
-    threshold_value = 150
-    px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
-
-    # Step 4: Perform morphological closing with multiple dilation and erosion steps
-    for test in range(4):
-        px_array = computeDilation8Nbh3x3FlatSE(px_array, image_width, image_height)
-
-    for test in range(4):
-        px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
-
-    # Step 5: Finding bounding box
-
-    # Label components of pixel array using connected component analysis
-    connectedComponents = computeConnectedComponentLabeling(px_array, image_width, image_height)
-    component_array = connectedComponents[0]
-    component_labels = connectedComponents[1]
-
-    skipped_labels = [0]
-    boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
+    boxPosition = detectPlate(px_array_r, px_array_g, px_array_b, image_width, image_height)
 
     # get x,y min and max values of bounding box
     bbox_min_x = boxPosition[0]
