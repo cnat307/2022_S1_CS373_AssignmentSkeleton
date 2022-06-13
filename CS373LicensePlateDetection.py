@@ -270,14 +270,15 @@ def computeConnectedComponentLabeling(pixel_array, image_width, image_height):
 
     return output, labels
 
-def createBoundingBox(component_array, component_labels, image_width, image_height):
+def createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels):
 
     total_pixels = 0
-    component_index = 0
+    component_label = 0
     for x in component_labels.keys():
-        if component_labels[x] > total_pixels:
-            component_index = x
-            total_pixels = component_labels[x]
+        if x not in skipped_labels:
+            if component_labels[x] > total_pixels:
+                component_label = x
+                total_pixels = component_labels[x]
 
     min_x = image_height
     max_x = 0
@@ -285,7 +286,7 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
     max_y = 0
     for i, x in enumerate(component_array):
         for j, y in enumerate(x):
-            if y == component_index:
+            if y == component_label:
 
                 if i < min_y:
                     min_y = i
@@ -298,6 +299,11 @@ def createBoundingBox(component_array, component_labels, image_width, image_heig
 
                 if j > max_x:
                     max_x = j
+
+    aspect_ratio = (max_x-min_x)/(max_y-min_y)
+    if aspect_ratio > 5 or aspect_ratio < 1.5:
+        skipped_labels = skipped_labels + [component_label]
+        return createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
 
     return [min_x, max_x, min_y, max_y]
 
@@ -312,7 +318,7 @@ def main():
     SHOW_DEBUG_FIGURES = True
 
     # this is the default input image filename
-    input_filename = "numberplate2.png"
+    input_filename = "numberplate6.png"
 
     if command_line_arguments != []:
         input_filename = command_line_arguments[0]
@@ -357,14 +363,14 @@ def main():
     px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
     # Step 3: Perform thresholding operation
-    threshold_value = 140
+    threshold_value = 150
     px_array = computeThresholdGE(px_array, threshold_value, image_width, image_height)
 
     # Step 4: Perform morphological closing with multiple dilation and erosion steps
-    for test in range(3):
+    for test in range(4):
         px_array = computeDilation8Nbh3x3FlatSE(px_array, image_width, image_height)
 
-    for test in range(3):
+    for test in range(4):
         px_array = computeErosion8Nbh3x3FlatSE(px_array, image_width, image_height)
 
     # Step 5: Finding bounding box
@@ -374,7 +380,8 @@ def main():
     component_array = connectedComponents[0]
     component_labels = connectedComponents[1]
 
-    boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height)
+    skipped_labels = [0]
+    boxPosition = createBoundingBox(component_array, component_labels, image_width, image_height, skipped_labels)
 
     # get x,y min - max values of bounding box
     bbox_min_x = boxPosition[0]
