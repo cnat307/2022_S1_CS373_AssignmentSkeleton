@@ -397,8 +397,9 @@ def main():
     bbox_min_y = boxPosition[2]
     bbox_max_y = boxPosition[3]
 
-    # set final image array to original red pixel array
-    px_array = px_array_r
+    # set final image array to stretched greyscale image
+    px_array = computeRGBToGreyscale(px_array_r, px_array_g, px_array_b, image_width, image_height)
+    px_array = scaleTo0And255AndQuantize(px_array, image_width, image_height)
 
     # Draw a bounding box as a rectangle into the input image
     axs1[1, 1].set_title('Final image of detection')
